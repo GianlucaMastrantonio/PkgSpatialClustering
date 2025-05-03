@@ -32,7 +32,7 @@ function sampling_ncluster(
   is_new::Bool = false
   best_perm::Vector{Int64} = zeros(Float64, Kmax)
   freq_table::Matrix{Int64} = zeros(Float64, Kmax, Kmax)
-  for isim in 1:1
+  for isim in 1:100
 
     
     obj_mixture_prop.prob[1] = rand(Normal(obj_mixture_mcmc.prob[1], sample(sd_vector, 1)[1]))
@@ -54,7 +54,7 @@ function sampling_ncluster(
     obj_mixture_prop.prob[1] = obj_mixture_mcmc.prob[1]
   end
   #println("prob", obj_mixture_mcmc.prob[1])
-  for isim in 1:10
+  for isim in 1:20
 
 
     MH_ratio = 0.0
@@ -192,13 +192,15 @@ function sampling_ncluster(
           update_param_cluster(obj_data_prop, obj_mixture_prop, k)
         end
 
-        for k in 1:n_clust
+        for k in 1:(n_clust-1)
           MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
         end
         MH_ratio += -obj_data_mcmc.log_likelihood[n_clust]
 
-      #  println([MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]) ,(n_clust - 1) * log(obj_mixture_mcmc.prob[1])])
+        #println([MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]), (n_clust - 1) * log(obj_mixture_mcmc.prob[1]), log_prob_mcmc, log_prob_prop])
         # priors
+
+        
         MH_ratio += (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]) - (n_clust - 1) * log(obj_mixture_mcmc.prob[1])
 
         # proposal

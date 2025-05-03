@@ -261,7 +261,7 @@ end
 
 
 
-function matching_cluster_different_sizes!(best_perm::Vector{Int64}, freq_table::Matrix{Int64}, cluster_orig::Vector{Int64}, cluster_to_transform::Vector{Int64})::Dict{Int64,Int64}
+function matching_cluster_different_sizes_deterministic!(best_perm::Vector{Int64}, freq_table::Matrix{Int64}, cluster_orig::Vector{Int64}, cluster_to_transform::Vector{Int64})::Dict{Int64,Int64}
 
     un_orig = sort!(unique(cluster_orig))
     un_prop = sort!(unique(cluster_to_transform))
@@ -308,6 +308,64 @@ function matching_cluster_different_sizes!(best_perm::Vector{Int64}, freq_table:
 
     return mapping
 
+end
+
+
+
+function matching_cluster_different_sizes_random!(best_perm::Vector{Int64}, freq_table::Matrix{Int64}, cluster_orig::Vector{Int64}, cluster_to_transform::Vector{Int64})::Dict{Int64,Int64}
+
+    un_orig = sort!(unique(cluster_orig))
+    un_prop = sort!(unique(cluster_to_transform))
+
+    #if size(un_orig, 1) > size(un_prop,1)
+
+    #    push!(un_prop, 100)
+
+    #end
+    #if size(un_orig, 1) < size(un_prop, 1)
+    #    push!(un_orig, 100)
+    #end
+    if size(un_orig, 1) > size(un_prop, 1)
+
+        push!(un_prop, size(un_orig, 1))
+
+    end
+    if size(un_orig, 1) < size(un_prop, 1)
+        push!(un_orig, size(un_prop, 1))
+    end
+    #println("un_orig=", un_orig)
+    #println("un_prop=", un_prop)
+
+    #freq_table .= 0
+    #for irow = 1:size(un_orig, 1)
+    #    for icol = 1:size(un_prop, 1)
+    #        freq_table[irow, icol] = sum((cluster_orig .== un_orig[irow]) .& (cluster_to_transform .== un_prop[icol]))
+    #    end
+    #end
+
+    #best_sum::Float64 = -Inf
+    #best_perm .= 0
+    #for p in permutations(1:size(un_prop, 1))
+    #    s = sum(freq_table[i, p[i]] for i in 1:min(size(un_orig, 1), size(un_prop, 1)))
+    #    if s > best_sum
+    #        best_sum = s
+    #        best_perm[1:size(un_prop, 1)] = p
+    #    end
+    #end
+
+    #un_prop[sample(1:length(un_prop), length(un_prop), replace=false)]
+    mapping = Dict(zip(un_prop[sample(1:length(un_prop), length(un_prop), replace=false)], un_orig))
+    #mapping = Dict(zip(vec_from, vec_to))
+    #println("mapping=", mapping)
+    cluster_to_transform .= getindex.(Ref(mapping), cluster_to_transform)
+
+    return mapping
+
+end
+
+function matching_cluster_different_sizes!(best_perm::Vector{Int64}, freq_table::Matrix{Int64}, cluster_orig::Vector{Int64}, cluster_to_transform::Vector{Int64})::Dict{Int64,Int64}
+
+    return matching_cluster_different_sizes_random!(best_perm, freq_table, cluster_orig, cluster_to_transform)
 end
 #function update_zeta_from_known_clusters_sep(obj_clust::TestMixture_V5, obj_graph::GraphCluter_Vers5)
 

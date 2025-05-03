@@ -52,6 +52,7 @@ function spatial_cluster_v1(;
         offset=0,
         showspeed=true,
     )
+    
     #p3 = Progress(
     #    burnin + (sample_to_save - 1) * thin,
     #    desc="clusters ",
@@ -92,10 +93,14 @@ function spatial_cluster_v1(;
         for jMCMC = 1:thin_burnin
 
             iterations += 1
-            println("K = ", obj_mixture_mcmc.K[1], " - ", countmap(obj_mixture_mcmc.cluster))
+            #println("K = ", obj_mixture_mcmc.K[1], " - ", countmap(obj_mixture_mcmc.cluster))
             #println(countmap(obj_mixture_mcmc.cluster))
-            ProgressMeter.next!(p2; showvalues=[(:iterations, iterations)])
-            
+            #ProgressMeter.next!(p2; showvalues=[(:iterations, iterations)])
+            ProgressMeter.next!(p2; showvalues=[
+                (:iterations, iterations),
+                (:K, obj_mixture_mcmc.K[1]),
+                (:clusters, countmap(obj_mixture_mcmc.cluster))
+            ])
 
             #println("1", obj_mixture_mcmc.miss_edge)
             #println(obj_mixture_prop.miss_edge)
@@ -103,13 +108,13 @@ function spatial_cluster_v1(;
             #println(sum(obj_graph_prop.n_neigh_st))
             
             
-            println("A")
+            #println("A")
             sampling_w(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
-            println("B")
+            #println("B")
             #sampling_separator(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
-            println("C")
+            #println("C")
             sampling_separator_jump(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
             
