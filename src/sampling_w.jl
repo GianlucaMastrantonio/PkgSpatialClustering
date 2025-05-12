@@ -6,7 +6,8 @@ function sampling_w(
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
-  obj_data_prop::TD
+  obj_data_prop::TD,
+  obj_prior::PriorsMod1_V4
 ) where {TD<:GeneralData}
 
   n_clust::Int64 = obj_mixture_mcmc.K[1]
@@ -94,14 +95,16 @@ function sampling_w(
 
                 for k in 1:n_clust
                   update_which(obj_data_prop, obj_mixture_prop, k)
-                  update_param_cluster(obj_data_prop, obj_mixture_prop, k)
+                  update_param_cluster_conditional(obj_data_prop, obj_mixture_prop, k)
 
                   update_which(obj_data_mcmc, obj_mixture_mcmc, k)
-                  update_param_cluster(obj_data_mcmc, obj_mixture_mcmc, k)
+                  update_param_cluster_conditional(obj_data_mcmc, obj_mixture_mcmc, k)
 
                   MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
 
                 end
+                MH_ratio += logpdf(obj_prior.w, obj_graph_prop.weight_mat.data[irow, icol]) - logpdf(obj_prior.w, obj_graph_mcmc.weight_mat.data[irow, icol])
+
                 #println(MH_ratio)
                 
                 if rand(Uniform(0.0,1.0)) < exp(MH_ratio)

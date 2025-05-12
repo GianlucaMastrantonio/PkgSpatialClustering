@@ -8,7 +8,7 @@ function spatial_cluster_v1(;
     obj_graph::GraphCluter_Vers5,
     obj_cluster::TestMixture_V5,
     obj_data::TD,
-    obj_prior::PriorsMod1_V3,
+    obj_prior::PriorsMod1_V4,
 ) where {TD<:GeneralData}
 
     # indices
@@ -102,19 +102,12 @@ function spatial_cluster_v1(;
                 (:clusters, countmap(obj_mixture_mcmc.cluster))
             ])
 
-            #println("1", obj_mixture_mcmc.miss_edge)
-            #println(obj_mixture_prop.miss_edge)
-            #println(sum(obj_graph_mcmc.n_neigh_st))
-            #println(sum(obj_graph_prop.n_neigh_st))
-            
-            
-            #println("A")
-            sampling_w(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
             #println("B")
-            #sampling_separator(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
+            sampling_separator(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
-            #println("C")
+            #println("A")
+            #@time s
             sampling_separator_jump(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop)
             
             
@@ -130,6 +123,8 @@ function spatial_cluster_v1(;
             
 
             
+            #println("B")
+            #@time 
             sampling_ncluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
 
             @toggled_assert sum(obj_data_mcmc.n_which_obs[1:obj_mixture_mcmc.K[1]]) == obj_data_mcmc.n_points
@@ -148,6 +143,9 @@ function spatial_cluster_v1(;
             # ! LASCIARLO QUI
             from_marg_to_full(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
             
+            #println("C")
+            #@time 
+            sampling_w(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
             
             sampling_mu(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
             @toggled_assert obj_data_prop.log_det[1] == obj_data_mcmc.log_det[1]

@@ -254,6 +254,11 @@ function update_which(obj_data::TData, obj_mixture::TestMixture_V5, k::Int64) wh
 
 end
 
+function update_param_cluster_conditional(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+
+    update_param_cluster(obj_data, obj_mixture, k)
+end
+
 function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64)
     
     if obj_data.n_which_obs[k] > 0
@@ -299,6 +304,28 @@ function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V
 end
 
 
+function update_param_cluster_conditional(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+
+    if obj_data.n_which_obs[k] > 0
+
+
+
+        which_obs = obj_data.which_obs
+
+        obj_data.log_likelihood[k] = 0.0
+
+        for iobs in which_obs[k][1:obj_data.n_which_obs[k]]
+
+            obj_data.log_likelihood[k] += logpdf(Normal(obj_data.gp[iobs, k], obj_data.tau2[k]^0.5), obj_data.obs[iobs])
+
+        end
+    else
+
+        obj_data.log_likelihood[k] = log(0.0)
+
+    end
+    
+end
 
 function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64)
     
@@ -347,10 +374,6 @@ function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::T
     #    obj_data.log_likelihood[k] = log(0.0)
 
     #end
-
-
-
-
 
 
 end
@@ -428,7 +451,7 @@ function sampling_from_prior(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
     
     sampling_rho_and_gp_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
@@ -449,7 +472,7 @@ function sampling_from_prior(iterations::Int64,
     obj_mixture_prop::TestMixture_V5,
     obj_data_mcmc::GpDataMarginalized_Vers9,
     obj_data_prop::GpDataMarginalized_Vers9,
-    obj_prior::PriorsMod1_V3)
+    obj_prior::PriorsMod1_V4)
 
 
     sampling_rho_tau2_sigma2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)

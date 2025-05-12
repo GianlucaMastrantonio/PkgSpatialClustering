@@ -5,7 +5,7 @@ function sampling_mu(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V3) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
   
   sampling_mu_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop,  obj_prior)
 
@@ -31,7 +31,7 @@ function sampling_mu_empty(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V3) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
 
   obj_data_mcmc.mu[k] = rand(obj_prior.mu)
   obj_data_prop.mu[k] = obj_data_mcmc.mu[k]
@@ -50,7 +50,7 @@ function sampling_mu_cluster(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V3) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V4) where {TD<:GeneralData}
 
   var_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (1.0 / params(obj_prior.mu)[2]^2.0)
   mean_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (params(obj_prior.mu)[1] / params(obj_prior.mu)[2]^2.0)
@@ -118,7 +118,7 @@ end
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V3)
+#  obj_prior::PriorsMod1_V4)
 
 #  #var_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (1.0 / params(obj_prior.mu)[2]^2.0)
 #  #mean_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (params(obj_prior.mu)[1] / params(obj_prior.mu)[2]^2.0)

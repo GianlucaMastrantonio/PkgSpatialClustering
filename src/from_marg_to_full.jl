@@ -7,7 +7,7 @@ function from_marg_to_full(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
 
 end
@@ -19,7 +19,7 @@ function from_marg_to_full(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpDataMarginalized_Vers9,
   obj_data_prop::GpDataMarginalized_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
    
   ## calcolo le nuove Sigma e simulo
@@ -67,7 +67,7 @@ function from_marg_to_full(iterations::Int64,
   #  obj_mixture_prop::TestMixture_V5,
   #  obj_data_mcmc::GpData_Vers9,
   #  obj_data_prop::GpData_Vers9,
-  #  obj_prior::PriorsMod1_V3)
+  #  obj_prior::PriorsMod1_V4)
 end
 
 
@@ -79,7 +79,7 @@ function sampling_gp_cluster_for_marginal(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpDataMarginalized_Vers9,
   obj_data_prop::GpDataMarginalized_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
   sigma_post::Symmetric{Float64,Matrix{Float64}} = Symmetric(zeros(Float64, obj_data_mcmc.n_points, obj_data_mcmc.n_points))
   mu_post::Vector{Float64} = zeros(Float64, obj_data_mcmc.n_points)
@@ -116,7 +116,7 @@ function from_full_to_marg(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
 
 end
@@ -128,7 +128,7 @@ function from_full_to_marg(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpDataMarginalized_Vers9,
   obj_data_prop::GpDataMarginalized_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
 
   ## calcolo le nuove Sigma e simulo

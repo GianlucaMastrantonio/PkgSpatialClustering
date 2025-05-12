@@ -5,7 +5,7 @@ function sampling_tau2(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V3) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
   
   sampling_tau2_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
 
@@ -31,7 +31,7 @@ function sampling_tau2_empty(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V3)
+  obj_prior::PriorsMod1_V4)
 
   obj_data_mcmc.tau2[k] = rand(obj_prior.tau2)
   obj_data_prop.tau2[k] = obj_data_mcmc.tau2[k]
@@ -47,7 +47,7 @@ function sampling_tau2_cluster(iterations::Int64,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V3) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V4) where {TD<:GeneralData}
 
 
 
@@ -118,7 +118,7 @@ end
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V3)
+#  obj_prior::PriorsMod1_V4)
 
 
 #end

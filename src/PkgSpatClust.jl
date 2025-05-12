@@ -14,6 +14,7 @@ using DelaunayTriangulation
 using MetaGraphs
 using Clustering
 using Combinatorics
+using SpecialFunctions
 
 
 #include(joinpath("assert.jl"))
@@ -39,6 +40,6 @@ include(joinpath("from_marg_to_full.jl"))
 
 #include(joinpath("sampling_gp.jl"))
 
-export GraphCluter_Vers5, TestMixture_V5, spatial_cluster_v1, GpData_Vers9, PriorsMod1_V3, GpDataMarginalized_Vers9
+export GraphCluter_Vers5, TestMixture_V5, spatial_cluster_v1, GpData_Vers9, PriorsMod1_V4, GpDataMarginalized_Vers9
 
 end # module PkgSpatClust

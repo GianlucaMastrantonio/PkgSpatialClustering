@@ -30,11 +30,11 @@ function sampling_separator(
   MH_ratio::Float64 = 0.0
 
   cluster_fixed::Int64 = 0
-  cluster_chaged::Int64 = 0
+  cluster_changed::Int64 = 0
 
   freq_table::Matrix{Int64} = zeros(Float64, n_clust, n_clust)
   best_sum::Float64 = 0.0
-  best_perm::Vector{Int64} = zeros(Float64, n_clust)
+  best_perm::Vector{Int64} = zeros(Int64, n_clust)
   for k in 1:(n_clust-1)
     
     # decido quale nodo cambiare
@@ -43,21 +43,23 @@ function sampling_separator(
     node_changed = miss_edge_mcmc[k, z_sample]
     node_fixed = miss_edge_mcmc[k, 3-z_sample]
 
-    cluster_fixed = sep_clust_mcmc[k, z_sample]
-    cluster_changed = sep_clust_mcmc[k, 3-z_sample]
+    #cluster_fixed = sep_clust_mcmc[k, z_sample]
+    #cluster_changed = sep_clust_mcmc[k, 3-z_sample]
     # trovo quanti e quali vicini ha nel grafo
     w1_mcmc = obj_graph_mcmc.graph_st[findall(x -> x == node_fixed, obj_graph_mcmc.graph_st[:, 1]), 2]
     w2_mcmc = obj_graph_mcmc.graph_st[findall(x -> x == node_fixed, obj_graph_mcmc.graph_st[:, 2]), 1]
-    w_mcmc = [w1_mcmc; w2_mcmc]
+    w_mcmc = unique([w1_mcmc; w2_mcmc])
 
     # controllo e se non ci siano ripetizioni nei nodi
     #filter!(x -> x != node_changed, w_mcmc)
     for k_app in 1:(n_clust-1)
-      if miss_edge_mcmc[k_app, 1] == node_fixed
-        filter!(x -> x != miss_edge_mcmc[k_app, 2], w_mcmc)
-      end
-      if miss_edge_mcmc[k_app, 2] == node_fixed
-        filter!(x -> x != miss_edge_mcmc[k_app, 1], w_mcmc)
+      if k_app != k
+        if miss_edge_mcmc[k_app, 1] == node_fixed
+          filter!(x -> x != miss_edge_mcmc[k_app, 2], w_mcmc)
+        end
+        if miss_edge_mcmc[k_app, 2] == node_fixed
+          filter!(x -> x != miss_edge_mcmc[k_app, 1], w_mcmc)
+        end
       end
     end
 
@@ -65,12 +67,12 @@ function sampling_separator(
       ## proposta
       node_proposed = sample(w_mcmc, 1)[1]
       miss_edge_prop[k, z_sample] = node_proposed
-      sep_clust_prop[k, [1,2]] =  sep_clust_prop[k, [2,1]]
+      #sep_clust_prop[k, [1,2]] =  sep_clust_prop[k, [2,1]]
       ## cambio i zeta
       #obj_mixture_prop.cluster[node_fixed] = cluster_changed
       #obj_mixture_prop.cluster[node_proposed] = cluster_fixed
       
-      it_worked_zeta = update_zeta(obj_mixture_mcmc, obj_graph_mcmc)
+      it_worked_zeta = update_zeta(obj_mixture_prop, obj_graph_prop)
 
       if it_worked_zeta == false
         error("didn't work")
@@ -97,17 +99,20 @@ function sampling_separator(
       # trovo quanti e quali vicini ha nel grafo
       w1_prop = obj_graph_prop.graph_st[findall(x -> x == node_fixed, obj_graph_prop.graph_st[:, 1]), 2]
       w2_prop = obj_graph_prop.graph_st[findall(x -> x == node_fixed, obj_graph_prop.graph_st[:, 2]), 1]
-      w_prop = [w1_prop; w2_prop]
+      w_prop = unique([w1_prop; w2_prop])
 
       # controllo e se non ci siano ripetizioni nei nodi
       #filter!(x -> x != node_proposed, w_prop)
       for k_app in 1:(n_clust-1)
-        if miss_edge_prop[k_app, 1] == node_fixed
-          filter!(x -> x != miss_edge_prop[k_app, 2], w_prop)
+        if k_app != k
+          if miss_edge_prop[k_app, 1] == node_fixed
+            filter!(x -> x != miss_edge_prop[k_app, 2], w_prop)
+          end
+          if miss_edge_prop[k_app, 2] == node_fixed
+            filter!(x -> x != miss_edge_prop[k_app, 1], w_prop)
+          end
         end
-        if miss_edge_prop[k_app, 2] == node_fixed
-          filter!(x -> x != miss_edge_prop[k_app, 1], w_prop)
-        end
+        
       end
 
       MH_ratio = 0.0
