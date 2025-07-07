@@ -1,11 +1,12 @@
 function sampling_separator(
   iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
-  obj_data_prop::TD
+  obj_data_prop::TD,
+  temperature::Float64
 ) where {TD <:GeneralData}
 
   
@@ -86,10 +87,10 @@ function sampling_separator(
 
       for k_app in 1:n_clust
         update_which(obj_data_prop, obj_mixture_prop, k_app)
-        update_param_cluster(obj_data_prop, obj_mixture_prop, k_app)
+        update_param_cluster(obj_data_prop, obj_mixture_prop, k_app, temperature)
 
         update_which(obj_data_mcmc, obj_mixture_mcmc, k_app)
-        update_param_cluster(obj_data_mcmc, obj_mixture_mcmc, k_app)
+        update_param_cluster(obj_data_mcmc, obj_mixture_mcmc, k_app, temperature)
       end
       
 
@@ -118,7 +119,7 @@ function sampling_separator(
       MH_ratio = 0.0
       MH_ratio += -log(Float64(size(w_prop, 1))) + log(Float64(size(w_mcmc, 1)))
       for k_app in 1:n_clust
-        MH_ratio += obj_data_prop.log_likelihood[k_app] - obj_data_mcmc.log_likelihood[k_app]
+        MH_ratio += obj_data_prop.log_likelihood[k_app]  - obj_data_mcmc.log_likelihood[k_app] 
       end
       
       
@@ -172,12 +173,13 @@ end
 
 function sampling_separator_jump(
   iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
-  obj_data_prop::TD
+  obj_data_prop::TD,
+  temperature::Float64
 ) where {TD <:GeneralData}
 
 
@@ -238,13 +240,13 @@ function sampling_separator_jump(
         MH_ratio = 0.0
         for k_app in 1:n_clust
           update_which(obj_data_prop, obj_mixture_prop, k_app)
-          update_param_cluster(obj_data_prop, obj_mixture_prop, k_app)
+          update_param_cluster(obj_data_prop, obj_mixture_prop, k_app, temperature)
 
           update_which(obj_data_mcmc, obj_mixture_mcmc, k_app)
-          update_param_cluster(obj_data_mcmc, obj_mixture_mcmc, k_app)
+          update_param_cluster(obj_data_mcmc, obj_mixture_mcmc, k_app, temperature)
 
 
-          MH_ratio += obj_data_prop.log_likelihood[k_app] - obj_data_mcmc.log_likelihood[k_app]
+          MH_ratio += obj_data_prop.log_likelihood[k_app]  - obj_data_mcmc.log_likelihood[k_app] 
         end
 
 

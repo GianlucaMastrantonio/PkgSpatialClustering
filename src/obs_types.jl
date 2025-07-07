@@ -101,7 +101,7 @@ function copy_from_to(from::TData, to::TData, k::Int64) where {TData<:GeneralDat
 
 end
 
-function GpData_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init::Vector{Float64}, sigma2_init::Vector{Float64}, tau2_init::Vector{Float64}, rho_init::Vector{Float64}, obj_mixture::TestMixture_V5, obj_graph::GraphCluter_Vers5)
+function GpData_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init::Vector{Float64}, sigma2_init::Vector{Float64}, tau2_init::Vector{Float64}, rho_init::Vector{Float64}, obj_mixture::TestMixture_V5, obj_graph::GraphCluter_Vers6, temperature::Float64 = 1.0)
 
     n_points = size(obs, 1)
 
@@ -125,7 +125,7 @@ function GpData_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init:
         end
     end
 
-    sigma_mat::Vector{Symmetric{Float64,Matrix{Float64}}} = [deepcopy(Symmetric(sigma2[k] .* exp.(-rho[k] .* distance_mat))) for k = 1:obj_mixture.Kmax[1]]
+    sigma_mat::Vector{Symmetric{Float64,Matrix{Float64}}} = [deepcopy(Symmetric(temperature * sigma2[k] .* exp.(-rho[k] .* distance_mat))) for k = 1:obj_mixture.Kmax[1]]
 
 
 
@@ -146,7 +146,7 @@ function GpData_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init:
 
     log_likelihood::Vector{Float64} = zeros(Float64, obj_mixture.Kmax[1])
     for k = 1:obj_mixture.Kmax[1]
-        log_likelihood[k] = -0.5 * n_points * log(2.0 * pi * tau2[k]) - 0.5 * sum((obs .- mu[k]) .^ 2)/ tau2[k]
+        log_likelihood[k] = -0.5 * n_points * log(2.0 * pi * tau2[k]) - 0.5 * sum((obs .- mu[k]) .^ 2) / (temperature * tau2[k])
     end
 
     which_obs = [zeros(Int64, n_points) for k = 1:obj_mixture.Kmax[1]]
@@ -156,7 +156,7 @@ function GpData_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init:
 
     for k = 1:obj_mixture.Kmax[1]
         update_which(out, obj_mixture, k)
-        update_param_cluster(out, obj_mixture, k)
+        update_param_cluster(out, obj_mixture, k, temperature)
     end
 
     return out
@@ -166,7 +166,7 @@ end
 
 
 
-function GpDataMarginalized_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init::Vector{Float64}, sigma2_init::Vector{Float64}, tau2_init::Vector{Float64}, rho_init::Vector{Float64}, obj_mixture::TestMixture_V5, obj_graph::GraphCluter_Vers5)::GpDataMarginalized_Vers9
+function GpDataMarginalized_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float64}, mu_init::Vector{Float64}, sigma2_init::Vector{Float64}, tau2_init::Vector{Float64}, rho_init::Vector{Float64}, obj_mixture::TestMixture_V5, obj_graph::GraphCluter_Vers6, temperature::Float64 = 1.0)::GpDataMarginalized_Vers9
 
     n_points = size(obs, 1)
 
@@ -190,7 +190,7 @@ function GpDataMarginalized_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float6
         end
     end
 
-    sigma_mat::Vector{Symmetric{Float64,Matrix{Float64}}} = [deepcopy(Symmetric(sigma2[k] .* exp.(-rho[k] .* distance_mat))) for k = 1:obj_mixture.Kmax[1]]
+    sigma_mat::Vector{Symmetric{Float64,Matrix{Float64}}} = [deepcopy(Symmetric(temperature * sigma2[k] .* exp.(-rho[k] .* distance_mat))) for k = 1:obj_mixture.Kmax[1]]
 
 
 
@@ -222,7 +222,7 @@ function GpDataMarginalized_Vers9(; obs::Vector{Float64}, gp_init::Matrix{Float6
 
     for k = 1:obj_mixture.K[1]
         update_which(out, obj_mixture, k)
-        update_param_cluster(out, obj_mixture, k)
+        update_param_cluster(out, obj_mixture, k, temperature)
     end
 
     return out
@@ -254,12 +254,12 @@ function update_which(obj_data::TData, obj_mixture::TestMixture_V5, k::Int64) wh
 
 end
 
-function update_param_cluster_conditional(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+function update_param_cluster_conditional(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64, temperature::Float64)
 
-    update_param_cluster(obj_data, obj_mixture, k)
+    update_param_cluster(obj_data, obj_mixture, k, temperature)
 end
 
-function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64, temperature::Float64)
     
     if obj_data.n_which_obs[k] > 0
 
@@ -287,7 +287,7 @@ function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V
 
         for iobs in which_obs[k][1:obj_data.n_which_obs[k]]
 
-            obj_data.log_likelihood[k] += logpdf(Normal( obj_data.gp[iobs, k], obj_data.tau2[k]^0.5), obj_data.obs[iobs])
+            obj_data.log_likelihood[k] += logpdf(Normal(obj_data.gp[iobs, k], (temperature * obj_data.tau2[k])^0.5), obj_data.obs[iobs])
 
         end
     else
@@ -304,7 +304,7 @@ function update_param_cluster(obj_data::GpData_Vers9, obj_mixture::TestMixture_V
 end
 
 
-function update_param_cluster_conditional(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+function update_param_cluster_conditional(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64, temperature::Float64)
 
     if obj_data.n_which_obs[k] > 0
 
@@ -316,7 +316,7 @@ function update_param_cluster_conditional(obj_data::GpDataMarginalized_Vers9, ob
 
         for iobs in which_obs[k][1:obj_data.n_which_obs[k]]
 
-            obj_data.log_likelihood[k] += logpdf(Normal(obj_data.gp[iobs, k], obj_data.tau2[k]^0.5), obj_data.obs[iobs])
+            obj_data.log_likelihood[k] += logpdf(Normal(obj_data.gp[iobs, k], (temperature * obj_data.tau2[k])^0.5), obj_data.obs[iobs])
 
         end
     else
@@ -327,7 +327,7 @@ function update_param_cluster_conditional(obj_data::GpDataMarginalized_Vers9, ob
     
 end
 
-function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64)
+function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::TestMixture_V5, k::Int64, temperature::Float64)
     
     @toggled_assert obj_data.n_which_obs[k] > 0
     #update_which(obj_data::GpData_Vers9, obj_mixture::TestMixture_V5, k::Int64)
@@ -347,7 +347,7 @@ function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::T
     w_obs = which_obs[k][index]
     
     
-    obj_data.sigma_mat[k].data[index, index] = Symmetric(obj_data.sigma2[k] .* exp.(-obj_data.rho[k] .* obj_data.distance_mat[w_obs, w_obs]) + obj_data.tau2[k] .* I(obj_data.n_which_obs[k]))
+    obj_data.sigma_mat[k].data[index, index] = Symmetric(temperature * obj_data.sigma2[k] .* exp.(-obj_data.rho[k] .* obj_data.distance_mat[w_obs, w_obs]) + temperature * obj_data.tau2[k] .* I(obj_data.n_which_obs[k]))
 
     chol_mat = cholesky(obj_data.sigma_mat[k][index, index])
     obj_data.inv_sigma_mat[k].data[index, index] = Symmetric(inv(chol_mat))
@@ -359,8 +359,8 @@ function update_param_cluster(obj_data::GpDataMarginalized_Vers9, obj_mixture::T
     end
 
     obj_data.log_likelihood[k] = -0.5 * obj_data.log_det[k] - 0.5 * obj_data.n_which_obs[k] * log(2.0 * pi) - 0.5 * transpose(obj_data.obs[w_obs] .- obj_data.mu[k]) * obj_data.inv_sigma_mat[k][index, index] * (obj_data.obs[w_obs] .- obj_data.mu[k])
-
-
+    
+    
 
 
 
@@ -445,19 +445,20 @@ end
 
 function sampling_from_prior(iterations::Int64,
   k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V4)
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64)
 
     
-    sampling_rho_and_gp_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
-    sampling_tau2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
-    sampling_mu_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
-    sampling_sigma2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
+    sampling_rho_and_gp_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
+    sampling_tau2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
+    sampling_mu_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
+    sampling_sigma2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
 
 
 end
@@ -466,17 +467,18 @@ end
 
 function sampling_from_prior(iterations::Int64,
     k::Int64,
-    obj_graph_mcmc::GraphCluter_Vers5,
-    obj_graph_prop::GraphCluter_Vers5,
+    obj_graph_mcmc::GraphCluter_Vers6,
+    obj_graph_prop::GraphCluter_Vers6,
     obj_mixture_mcmc::TestMixture_V5,
     obj_mixture_prop::TestMixture_V5,
     obj_data_mcmc::GpDataMarginalized_Vers9,
     obj_data_prop::GpDataMarginalized_Vers9,
-    obj_prior::PriorsMod1_V4)
+    obj_prior::PriorsMod1_V6,
+    temperature::Float64)
 
 
-    sampling_rho_tau2_sigma2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
-    sampling_mu_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
+    sampling_rho_tau2_sigma2_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
+    sampling_mu_empty(iterations, k, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
     
 
 

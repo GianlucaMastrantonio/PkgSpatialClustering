@@ -36,10 +36,10 @@ include(joinpath("sampling_rho_and_gp.jl"))
 include(joinpath("sampling_cov_par.jl"))
 
 include(joinpath("from_marg_to_full.jl"))
-
+include(joinpath("parallel_tempering.jl"))
 
 #include(joinpath("sampling_gp.jl"))
 
-export GraphCluter_Vers5, TestMixture_V5, spatial_cluster_v1, GpData_Vers9, PriorsMod1_V4, GpDataMarginalized_Vers9
+export GraphCluter_Vers6, TestMixture_V5, spatial_cluster_v1, GpData_Vers9, PriorsMod1_V6, GpDataMarginalized_Vers9
 
 end # module PkgSpatClust

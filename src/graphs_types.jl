@@ -1,6 +1,6 @@
 abstract type GeneralGraph end
 
-struct GraphCluter_Vers5 <: GeneralGraph
+struct GraphCluter_Vers6 <: GeneralGraph
 
     n_points::Int64
 
@@ -15,11 +15,13 @@ struct GraphCluter_Vers5 <: GeneralGraph
 
     n_neigh_graph::Vector{Int64}
     n_neigh_st::Vector{Int64}
+    covariates::Array{Float64,3}
+    predictors::Vector{Float64}
 
 
 
 
-    function GraphCluter_Vers5(
+    function GraphCluter_Vers6(
         n_points::Int64,
         graph::Graphs.SimpleGraphs.SimpleGraph{Int64},
         graph_st::Matrix{Int64},
@@ -29,6 +31,8 @@ struct GraphCluter_Vers5 <: GeneralGraph
         neigh_st::Vector{Vector{Int64}},
         n_neigh_graph::Vector{Int64},
         n_neigh_st::Vector{Int64},
+        covariates::Array{Float64,3},
+        predictors::Vector{Float64}
     )
 
         new(
@@ -41,13 +45,15 @@ struct GraphCluter_Vers5 <: GeneralGraph
             neigh_st,
             n_neigh_graph,
             n_neigh_st,
+            covariates,
+            predictors
         )
 
     end
 
 end
 
-function copy_from_to(from::GraphCluter_Vers5, to::GraphCluter_Vers5)
+function copy_from_to(from::GraphCluter_Vers6, to::GraphCluter_Vers6)
 
     to.graph_st .= from.graph_st
     to.weight_mat.data .= from.weight_mat.data
@@ -55,14 +61,15 @@ function copy_from_to(from::GraphCluter_Vers5, to::GraphCluter_Vers5)
         to.neigh_st[i] .= from.neigh_st[i]
     end    
     to.n_neigh_st .= from.n_neigh_st
+    to.predictors .= from.predictors
 
-
+    
 
 
 end
 
 
-function update_st(graph_obj::GraphCluter_Vers5, index_visited::Vector{Int64})
+function update_st(graph_obj::GraphCluter_Vers6, index_visited::Vector{Int64})
 
     index_visited .= 0.0
     graph_obj.graph_st .= 0
@@ -93,14 +100,28 @@ function update_st(graph_obj::GraphCluter_Vers5, index_visited::Vector{Int64})
     end
 end
 
-function GraphCluter_Vers5(;
+function GraphCluter_Vers6(;
     graph::Graphs.SimpleGraphs.SimpleGraph{Int64},
     weight_mat::Symmetric{Float64,Matrix{Float64}},
     coords::Matrix{Float64},
+    covariates::Array{Float64,3},
+    predictors::Vector{Float64}
 )
-
+    
+    for i = 2:size(covariates, 2)
+        for j in 1:(i-1)
+            for k in 1:size(covariates,1)
+                covariates[k,i,j] = covariates[k,j,i]     
+            end
+        end
+    end
     n_points = size(weight_mat, 1)
-
+    if size(covariates, 2) != size(covariates, 3)
+        error("")
+    end
+    if size(covariates, 2) != size(coords, 1)
+        error("covariates and coords must have the same number of columns")
+    end
     #app_graph_st = Graphs.prim_mst(graph, weight_mat)
     #wilsons_algorithm(graph)
     graph_st = zeros(Int64, n_points - 1, 2)
@@ -139,7 +160,7 @@ function GraphCluter_Vers5(;
 
     end
 
-    return GraphCluter_Vers5(
+    return GraphCluter_Vers6(
         n_points,
         graph,
         graph_st,
@@ -149,6 +170,8 @@ function GraphCluter_Vers5(;
         neigh_st,
         n_neigh_graph,
         n_neigh_st,
+        covariates,
+        predictors
     )
 end
 
@@ -208,7 +231,7 @@ function order_mst_recursive(
 
 end
 
-#function GraphCluter_Vers5(graph::Graphs.SimpleGraphs.SimpleGraph{Int64}, weight_mat::Symmetric{Float64,Matrix{Float64}}, coords::Matrix{Float64})
+#function GraphCluter_Vers6(graph::Graphs.SimpleGraphs.SimpleGraph{Int64}, weight_mat::Symmetric{Float64,Matrix{Float64}}, coords::Matrix{Float64})
 
 #  n_points = size(weight_mat, 1)
 
@@ -240,7 +263,7 @@ end
 
 #  end
 
-#  return GraphCluter_Vers5(n_points, graph, graph_st, weight_mat, coords, neigh_graph, neigh_st, n_neigh_graph, n_neigh_st)
+#  return GraphCluter_Vers6(n_points, graph, graph_st, weight_mat, coords, neigh_graph, neigh_st, n_neigh_graph, n_neigh_st)
 #end
 
 

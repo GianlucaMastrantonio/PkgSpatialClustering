@@ -50,7 +50,7 @@ end
 function TestMixture_V5(;
     Kmax::Int64,
     miss_edge_init::Matrix{Int64},
-    obj_graph::GraphCluter_Vers5,
+    obj_graph::GraphCluter_Vers6,
     K_init::Int64 
 )
     n_points = obj_graph.n_points
@@ -76,7 +76,7 @@ function TestMixture_V5(;
 
 end
 
-function update_zeta(obj_clust::TestMixture_V5, obj_graph::GraphCluter_Vers5)
+function update_zeta(obj_clust::TestMixture_V5, obj_graph::GraphCluter_Vers6)
 
     start_index::Int64 = obj_graph.graph_st[1, 1]
     index_k = [1]
@@ -93,7 +93,7 @@ end
 function update_zeta_iter(
     obs::Int64,
     obj_clust::TestMixture_V5,
-    obj_graph::GraphCluter_Vers5,
+    obj_graph::GraphCluter_Vers6,
     index_k::Vector{Int64},
     index_iter::Vector{Int64},
     current_k::Int64,
@@ -367,7 +367,7 @@ function matching_cluster_different_sizes!(best_perm::Vector{Int64}, freq_table:
 
     return matching_cluster_different_sizes_random!(best_perm, freq_table, cluster_orig, cluster_to_transform)
 end
-#function update_zeta_from_known_clusters_sep(obj_clust::TestMixture_V5, obj_graph::GraphCluter_Vers5)
+#function update_zeta_from_known_clusters_sep(obj_clust::TestMixture_V5, obj_graph::GraphCluter_Vers6)
 
 #    start_index::Int64 = obj_graph.graph_st[1, 1]
 #    index_k = [1]
@@ -384,7 +384,7 @@ end
 #function update_zeta_from_known_clusters_sep_iter(
 #    obs::Int64,
 #    obj_clust::TestMixture_V5,
-#    obj_graph::GraphCluter_Vers5,
+#    obj_graph::GraphCluter_Vers6,
 #    index_k::Vector{Int64},
 #    index_iter::Vector{Int64},
 #    current_k::Int64,

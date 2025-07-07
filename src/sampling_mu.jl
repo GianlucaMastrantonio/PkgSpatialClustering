@@ -1,13 +1,14 @@
 function sampling_mu(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD <:GeneralData}
   
-  sampling_mu_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop,  obj_prior)
+    sampling_mu_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop,  obj_prior, temperature)
 
 
   #if obj_mixture_mcmc.K[1] == obj_mixture_mcmc.Kmax
@@ -25,13 +26,14 @@ end
 
 function sampling_mu_empty(iterations::Int64,
   k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD<:GeneralData}
 
   obj_data_mcmc.mu[k] = rand(obj_prior.mu)
   obj_data_prop.mu[k] = obj_data_mcmc.mu[k]
@@ -44,13 +46,14 @@ end
 
 
 function sampling_mu_cluster(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD<:GeneralData}
 
   var_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (1.0 / params(obj_prior.mu)[2]^2.0)
   mean_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (params(obj_prior.mu)[1] / params(obj_prior.mu)[2]^2.0)
@@ -112,13 +115,13 @@ function is_pos_def(M::AbstractMatrix)
 end
 
 #function sampling_mu_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 #  #var_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (1.0 / params(obj_prior.mu)[2]^2.0)
 #  #mean_p::Vector{Float64} = ones(Float64, obj_mixture_mcmc.K[1]) .* (params(obj_prior.mu)[1] / params(obj_prior.mu)[2]^2.0)

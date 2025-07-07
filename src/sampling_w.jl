@@ -1,13 +1,14 @@
 
 function sampling_w(
   iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64
 ) where {TD<:GeneralData}
 
   n_clust::Int64 = obj_mixture_mcmc.K[1]
@@ -22,7 +23,9 @@ function sampling_w(
 
   node_a::Int64 = 0
   node_b::Int64 = 0
-
+  xbeta::Float64 = 0.0
+  var_beta::Matrix{Float64} = zeros(Float64, size(obj_graph_mcmc.predictors, 1), size(obj_graph_mcmc.predictors, 1))
+  mean_beta::Vector{Float64} = zeros(Float64, size(obj_graph_mcmc.predictors, 1))
   MH_ratio::Float64 = 0.0
 
   freq_table::Matrix{Int64} = zeros(Float64, n_clust, n_clust)
@@ -38,7 +41,7 @@ function sampling_w(
         z_sample = sample(sd_vector, 1)[1]
         obj_graph_prop.weight_mat.data[irow, icol] = rand(Normal(obj_graph_mcmc.weight_mat.data[irow, icol], z_sample))
         obj_graph_prop.weight_mat.data[icol, irow] = obj_graph_prop.weight_mat.data[irow, icol]
-        if (obj_graph_prop.weight_mat.data[irow, icol] > 0.0) & (obj_graph_prop.weight_mat.data[irow, icol] < 1.0)
+        if (obj_graph_prop.weight_mat.data[irow, icol] > -Inf) & (obj_graph_prop.weight_mat.data[irow, icol] < Inf)
 
           index_visited .= 0
           update_st(obj_graph_prop, index_visited)
@@ -95,15 +98,17 @@ function sampling_w(
 
                 for k in 1:n_clust
                   update_which(obj_data_prop, obj_mixture_prop, k)
-                  update_param_cluster_conditional(obj_data_prop, obj_mixture_prop, k)
+                  update_param_cluster_conditional(obj_data_prop, obj_mixture_prop, k, temperature)
 
                   update_which(obj_data_mcmc, obj_mixture_mcmc, k)
-                  update_param_cluster_conditional(obj_data_mcmc, obj_mixture_mcmc, k)
+                  update_param_cluster_conditional(obj_data_mcmc, obj_mixture_mcmc, k, temperature)
 
                   MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
 
                 end
-                MH_ratio += logpdf(obj_prior.w, obj_graph_prop.weight_mat.data[irow, icol]) - logpdf(obj_prior.w, obj_graph_mcmc.weight_mat.data[irow, icol])
+                #xbeta_prop = sum(obj_graph_prop.covariates[:, irow, icol] .* obj_graph_prop.regressors)
+                xbeta_mcmc = sum(obj_graph_mcmc.covariates[:, irow, icol] .* obj_graph_mcmc.predictors)
+                MH_ratio += logpdf(obj_prior.w, (obj_graph_prop.weight_mat.data[irow, icol] - xbeta_mcmc) / params(obj_prior.w)[2]) - logpdf(obj_prior.w, (obj_graph_mcmc.weight_mat.data[irow, icol] - xbeta_mcmc) / params(obj_prior.w)[2])
 
                 #println(MH_ratio)
                 
@@ -164,6 +169,28 @@ function sampling_w(
   end
 
 
+  ### regressors
 
+  for irow = 1:size(obj_graph_mcmc.neigh_graph, 1)
+
+    for icol_app = 1:size(obj_graph_mcmc.neigh_graph[irow], 1)
+
+      icol = obj_graph_mcmc.neigh_graph[irow][icol_app]
+
+      var_beta .+= obj_graph_mcmc.covariates[:, irow, icol] * transpose(obj_graph_mcmc.covariates[:, irow, icol]) ./ params(obj_prior.predictors)[2]
+      mean_beta .+= (obj_graph_mcmc.covariates[:, irow, icol] .* obj_graph_prop.weight_mat.data[irow, icol]) ./ params(obj_prior.predictors)[2]
+
+    end
+
+  end
+  for ii in 1:size(mean_beta,1)
+    var_beta[ii, ii] += 1.0/params(obj_prior.predictors)[2]
+    mean_beta[ii] += params(obj_prior.predictors)[1] / params(obj_prior.predictors)[2]
+  end
+  var_beta .= inv(cholesky(Symmetric(var_beta)))
+  mean_beta -= var_beta * mean_beta
+
+  obj_graph_mcmc.predictors .= rand(MvNormal(mean_beta, var_beta))
+  obj_graph_prop.predictors .= obj_graph_mcmc.predictors
 
 end

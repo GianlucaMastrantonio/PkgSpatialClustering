@@ -1,14 +1,15 @@
 function sampling_rho_and_gp(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD <:GeneralData}
   
-  sampling_rho_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
-  sampling_gp_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
+  sampling_rho_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
+  sampling_gp_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior, temperature)
 
 
   #if obj_mixture_mcmc.K[1] == obj_mixture_mcmc.Kmax
@@ -26,18 +27,19 @@ end
 
 function sampling_rho_and_gp_empty(iterations::Int64,
   k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpData_Vers9,
   obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V4)
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64)
 
   obj_data_mcmc.rho[k] = rand(obj_prior.rho)
   obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
 
-  obj_data_mcmc.sigma_mat[k].data .= obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat)
+  obj_data_mcmc.sigma_mat[k].data .= temperature *obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat)
   cholesky_mat = cholesky(obj_data_mcmc.sigma_mat[k])
   obj_data_mcmc.inv_sigma_mat[k].data .= inv(cholesky_mat)
   obj_data_mcmc.log_det[k] = 0.0
@@ -60,13 +62,13 @@ end
 
 #function sampling_rho_tau2_sigma2_empty(iterations::Int64,
 #  k::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpData_Vers9,
 #  obj_data_prop::GpData_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 #  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
 #  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
@@ -99,13 +101,14 @@ end
 
 function sampling_rho_tau2_sigma2_empty(iterations::Int64,
   k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::GpDataMarginalized_Vers9,
   obj_data_prop::GpDataMarginalized_Vers9,
-  obj_prior::PriorsMod1_V4)
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64)
 
   obj_data_mcmc.rho[k] = rand(obj_prior.rho)
   obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
@@ -116,7 +119,7 @@ function sampling_rho_tau2_sigma2_empty(iterations::Int64,
   obj_data_mcmc.sigma2[k] = rand(obj_prior.sigma2)
   obj_data_prop.sigma2[k] = obj_data_mcmc.sigma2[k]
 
-  obj_data_mcmc.sigma_mat[k].data .= obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat) + obj_data_mcmc.tau2[k] .* I(obj_data_mcmc.n_points)
+  obj_data_mcmc.sigma_mat[k].data .= temperature * obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat) + temperature * obj_data_mcmc.tau2[k] .* I(obj_data_mcmc.n_points)
   
   cholesky_mat = cholesky(obj_data_mcmc.sigma_mat[k])
   obj_data_mcmc.inv_sigma_mat[k].data .= inv(cholesky_mat)
@@ -140,13 +143,14 @@ end
 
 
 function sampling_gp_cluster(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD<:GeneralData}
   
   sigma_post::Symmetric{Float64,Matrix{Float64}} = Symmetric(zeros(Float64, obj_data_mcmc.n_points, obj_data_mcmc.n_points)) 
   mu_post::Vector{Float64} = zeros(Float64, obj_data_mcmc.n_points)
@@ -158,8 +162,8 @@ function sampling_gp_cluster(iterations::Int64,
     for i in 1:obj_data_mcmc.n_points
       k_iobs = obj_mixture_mcmc.cluster[i]
       if k == k_iobs
-        sigma_post.data[i,i] += 1.0 / obj_data_mcmc.tau2[k]
-        mu_post[i] += obj_data_mcmc.obs[i] / obj_data_mcmc.tau2[k]
+        sigma_post.data[i,i] += 1.0 / (obj_data_mcmc.tau2[k]*temperature)
+        mu_post[i] += obj_data_mcmc.obs[i] / (obj_data_mcmc.tau2[k] * temperature)
       end
     end
     
@@ -178,13 +182,14 @@ end
 
 
 function sampling_rho_cluster(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64) where {TD<:GeneralData}
 
   
   sd_vector::Vector{Float64} = [0.0001, 0.001, 0.01, 0.5,1.0]
@@ -200,7 +205,7 @@ function sampling_rho_cluster(iterations::Int64,
   #  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
     if (obj_data_prop.rho[k]>params(obj_prior.rho)[1]) && (obj_data_prop.rho[k]<params(obj_prior.rho)[2])
 
-      obj_data_prop.sigma_mat[k].data .= obj_data_prop.sigma2[k] .* exp.(-obj_data_prop.rho[k] .* obj_data_prop.distance_mat)
+      obj_data_prop.sigma_mat[k].data .= temperature * obj_data_prop.sigma2[k] .* exp.(-obj_data_prop.rho[k] .* obj_data_prop.distance_mat)
       cholesky_mat = cholesky(obj_data_prop.sigma_mat[k])
       obj_data_prop.inv_sigma_mat[k].data .= inv(cholesky_mat)
       obj_data_prop.log_det[k] = 0.0
@@ -270,13 +275,13 @@ end
 
 
 #function sampling_gp_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
   
 
@@ -284,13 +289,13 @@ end
 #end
 
 #function sampling_rho_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 
 
