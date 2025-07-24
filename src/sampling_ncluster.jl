@@ -99,8 +99,8 @@ function sampling_ncluster(
   obj_data_mcmc::TD,
   obj_data_prop::TD,
   obj_prior::PriorsMod1_V6,
-  temperature::Float64
-) where {TD<:GeneralData}
+  temperature::Float64, obj_cohesion_mcmc::TC, obj_cohesion_prop::TC
+) where {TD<:GeneralData, TC<:CohesionFunction}
 
 
   #k_mcmc = obj_mixture_mcmc.K[1]
@@ -168,24 +168,7 @@ function sampling_ncluster(
       n_clust_prop = sample([n_clust - 1, n_clust, n_clust + 1], 1)[1]
     end
 
-    #if n_clust_prop == 1
-    #  prob_proposta_mcmc = -log(2.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  prob_which_mcmc = -log(Kmax - n_clust_prop)
-    #elseif n_clust_prop == Kmax
-    #  prob_proposta_mcmc = -log(2.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  prob_which_mcmc = -log(n_clust_prop - 1)
-    #else
-    #  prob_proposta_mcmc = -log(3.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  if n_clust > n_clust_prop
-    #    prob_which_mcmc = -log(Kmax - n_clust_prop)
-    #  else
-    #    prob_which_mcmc = -log(n_clust_prop - 1)
-    #  end
-    #end
-
+    
 
 
     obj_mixture_prop.K[1] = n_clust_prop
@@ -246,6 +229,7 @@ function sampling_ncluster(
           MH_ratio += obj_data_prop.log_likelihood[k]  - obj_data_mcmc.log_likelihood[k]  
         end
         MH_ratio += obj_data_prop.log_likelihood[n_clust_prop] 
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
 
         #  println([MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]), (n_clust - 1) * log(obj_mixture_mcmc.prob[1])])
         # priors
@@ -304,6 +288,7 @@ function sampling_ncluster(
           MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
         end
         MH_ratio += -obj_data_mcmc.log_likelihood[n_clust]
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
         #println("Meno", [MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]) - (n_clust - 1) * log(obj_mixture_mcmc.prob[1]), -compute_proposal_change_cluster(from_k=n_clust, to_k=n_clust_prop, Kmax=Kmax, nobs=obj_data_mcmc.n_points) + compute_proposal_change_cluster(from_k=n_clust_prop, to_k=n_clust, Kmax=Kmax, nobs=obj_data_mcmc.n_points)])
         
         # priors
@@ -377,6 +362,7 @@ function sampling_ncluster(
         for k in 1:n_clust
           MH_ratio += obj_data_prop.log_likelihood[k]   - obj_data_mcmc.log_likelihood[k]  
         end
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
         #  println("Uguale", [MH_ratio])
 
         #
@@ -429,6 +415,7 @@ function sampling_ncluster(
     if (obj_mixture_mcmc.K[1]) <= size(miss_edge_mcmc, 1)
       for imiss in (obj_mixture_mcmc.K[1]):size(miss_edge_mcmc, 1)
         miss_edge_mcmc[imiss, :] .= 0
+        miss_edge_prop[imiss, :] .= 0
       end
     end
     n_clust = obj_mixture_mcmc.K[1]

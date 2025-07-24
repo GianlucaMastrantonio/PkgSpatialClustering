@@ -1,17 +1,17 @@
 
 
-function from_marg_to_full(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers6,
-  obj_graph_prop::GraphCluter_Vers6,
-  obj_mixture_mcmc::TestMixture_V5,
-  obj_mixture_prop::TestMixture_V5,
-  obj_data_mcmc::GpData_Vers9,
-  obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V6,
-  temperature::Float64)
+#function from_marg_to_full(iterations::Int64,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
+#  obj_mixture_mcmc::TestMixture_V5,
+#  obj_mixture_prop::TestMixture_V5,
+#  obj_data_mcmc::GpData_Vers9,
+#  obj_data_prop::GpData_Vers9,
+#  obj_prior::PriorsMod1_V6,
+#  temperature::Float64)
 
 
-end
+#end
 
 function from_marg_to_full(iterations::Int64,
   obj_graph_mcmc::GraphCluter_Vers6,
@@ -114,18 +114,18 @@ end
 
 
 
-function from_full_to_marg(iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers6,
-  obj_graph_prop::GraphCluter_Vers6,
-  obj_mixture_mcmc::TestMixture_V5,
-  obj_mixture_prop::TestMixture_V5,
-  obj_data_mcmc::GpData_Vers9,
-  obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V6,
-  temperature::Float64)
+#function from_full_to_marg(iterations::Int64,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
+#  obj_mixture_mcmc::TestMixture_V5,
+#  obj_mixture_prop::TestMixture_V5,
+#  obj_data_mcmc::GpData_Vers9,
+#  obj_data_prop::GpData_Vers9,
+#  obj_prior::PriorsMod1_V6,
+#  temperature::Float64)
 
 
-end
+#end
 
 function from_full_to_marg(iterations::Int64,
   obj_graph_mcmc::GraphCluter_Vers6,

@@ -25,38 +25,38 @@ function sampling_rho_and_gp(iterations::Int64,
 
 end
 
-function sampling_rho_and_gp_empty(iterations::Int64,
-  k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers6,
-  obj_graph_prop::GraphCluter_Vers6,
-  obj_mixture_mcmc::TestMixture_V5,
-  obj_mixture_prop::TestMixture_V5,
-  obj_data_mcmc::GpData_Vers9,
-  obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V6,
-  temperature::Float64)
+#function sampling_rho_and_gp_empty(iterations::Int64,
+#  k::Int64,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
+#  obj_mixture_mcmc::TestMixture_V5,
+#  obj_mixture_prop::TestMixture_V5,
+#  obj_data_mcmc::GpData_Vers9,
+#  obj_data_prop::GpData_Vers9,
+#  obj_prior::PriorsMod1_V6,
+#  temperature::Float64)
 
-  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
-  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
+#  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
+#  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
 
-  obj_data_mcmc.sigma_mat[k].data .= temperature *obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat)
-  cholesky_mat = cholesky(obj_data_mcmc.sigma_mat[k])
-  obj_data_mcmc.inv_sigma_mat[k].data .= inv(cholesky_mat)
-  obj_data_mcmc.log_det[k] = 0.0
-  for i = 1:size(cholesky_mat.L.data, 1)
-    obj_data_mcmc.log_det[k] += 2.0 * log(cholesky_mat.L.data[i, i])
-  end
+#  obj_data_mcmc.sigma_mat[k].data .= temperature *obj_data_mcmc.sigma2[k] .* exp.(-obj_data_mcmc.rho[k] .* obj_data_mcmc.distance_mat)
+#  cholesky_mat = cholesky(obj_data_mcmc.sigma_mat[k])
+#  obj_data_mcmc.inv_sigma_mat[k].data .= inv(cholesky_mat)
+#  obj_data_mcmc.log_det[k] = 0.0
+#  for i = 1:size(cholesky_mat.L.data, 1)
+#    obj_data_mcmc.log_det[k] += 2.0 * log(cholesky_mat.L.data[i, i])
+#  end
 
-  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
+#  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
 
-  obj_data_prop.sigma_mat[k].data .= obj_data_mcmc.sigma_mat[k].data
-  obj_data_prop.inv_sigma_mat[k] .= obj_data_mcmc.inv_sigma_mat[k]
-  obj_data_prop.log_det[k] = obj_data_mcmc.log_det[k]
+#  obj_data_prop.sigma_mat[k].data .= obj_data_mcmc.sigma_mat[k].data
+#  obj_data_prop.inv_sigma_mat[k] .= obj_data_mcmc.inv_sigma_mat[k]
+#  obj_data_prop.log_det[k] = obj_data_mcmc.log_det[k]
 
-  obj_data_mcmc.gp[:, k] = cholesky_mat.L*rand(Normal(0.0, 1.0), obj_data_mcmc.n_points) .+ obj_data_mcmc.mu[k]
-  obj_data_prop.gp[:, k] = obj_data_mcmc.gp[:, k] 
+#  obj_data_mcmc.gp[:, k] = cholesky_mat.L*rand(Normal(0.0, 1.0), obj_data_mcmc.n_points) .+ obj_data_mcmc.mu[k]
+#  obj_data_prop.gp[:, k] = obj_data_mcmc.gp[:, k] 
 
-end
+#end
 
 
 

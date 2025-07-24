@@ -24,21 +24,21 @@ function sampling_sigma2(iterations::Int64,
 
 end
 
-function sampling_sigma2_empty(iterations::Int64,
-  k::Int64,
-  obj_graph_mcmc::GraphCluter_Vers6,
-  obj_graph_prop::GraphCluter_Vers6,
-  obj_mixture_mcmc::TestMixture_V5,
-  obj_mixture_prop::TestMixture_V5,
-  obj_data_mcmc::GpData_Vers9,
-  obj_data_prop::GpData_Vers9,
-  obj_prior::PriorsMod1_V6,
-  temperature::Float64)
+#function sampling_sigma2_empty(iterations::Int64,
+#  k::Int64,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
+#  obj_mixture_mcmc::TestMixture_V5,
+#  obj_mixture_prop::TestMixture_V5,
+#  obj_data_mcmc::GpData_Vers9,
+#  obj_data_prop::GpData_Vers9,
+#  obj_prior::PriorsMod1_V6,
+#  temperature::Float64)
 
-  obj_data_mcmc.sigma2[k] = rand(obj_prior.sigma2)
-  obj_data_prop.sigma2[k] = obj_data_mcmc.sigma2[k]
+#  obj_data_mcmc.sigma2[k] = rand(obj_prior.sigma2)
+#  obj_data_prop.sigma2[k] = obj_data_mcmc.sigma2[k]
 
-end
+#end
 
 
 
