@@ -1,11 +1,11 @@
 #function sampling_rho_and_gp(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::TD,
 #  obj_data_prop::TD,
-#  obj_prior::PriorsMod1_V4) where {TD <:GeneralData}
+#  obj_prior::PriorsMod1_V6) where {TD <:GeneralData}
   
 #  sampling_rho_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
 #  sampling_gp_cluster(iterations, obj_graph_mcmc, obj_graph_prop, obj_mixture_mcmc, obj_mixture_prop, obj_data_mcmc, obj_data_prop, obj_prior)
@@ -26,13 +26,13 @@
 
 #function sampling_rho_and_gp_empty(iterations::Int64,
 #  k::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpData_Vers9,
 #  obj_data_prop::GpData_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 #  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
 #  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
@@ -60,13 +60,13 @@
 
 #function sampling_rho_tau2_sigma2_empty(iterations::Int64,
 #  k::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpData_Vers9,
 #  obj_data_prop::GpData_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 #  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
 #  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
@@ -99,13 +99,13 @@
 
 #function sampling_rho_tau2_sigma2_empty(iterations::Int64,
 #  k::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 #  obj_data_mcmc.rho[k] = rand(obj_prior.rho)
 #  obj_data_prop.rho[k] = obj_data_mcmc.rho[k]
@@ -139,13 +139,13 @@
 
 
 #function sampling_gp_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpData_Vers9,
 #  obj_data_prop::GpData_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
   
 #  sigma_post::Symmetric{Float64,Matrix{Float64}} = Symmetric(zeros(Float64, obj_data_mcmc.n_points, obj_data_mcmc.n_points)) 
 #  mu_post::Vector{Float64} = zeros(Float64, obj_data_mcmc.n_points)
@@ -173,13 +173,13 @@
 #end
 
 #function sampling_rho_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpData_Vers9,
 #  obj_data_prop::GpData_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
   
 #  sd_vector::Vector{Float64} = [0.0001, 0.001, 0.01, 0.5, 1.0]
@@ -242,13 +242,13 @@
 
 
 #function sampling_gp_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
   
 
@@ -256,13 +256,13 @@
 #end
 
 #function sampling_rho_cluster(iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::GpDataMarginalized_Vers9,
 #  obj_data_prop::GpDataMarginalized_Vers9,
-#  obj_prior::PriorsMod1_V4)
+#  obj_prior::PriorsMod1_V6)
 
 
 

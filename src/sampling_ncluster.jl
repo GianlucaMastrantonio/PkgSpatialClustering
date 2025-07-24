@@ -8,6 +8,33 @@ function compute_proposal_change_cluster(;from_k::Int64, to_k::Int64,  Kmax::Int
   if from_k == 1
     prob_proposal = -log(2.0)
     
+    
+
+  elseif from_k == Kmax
+    prob_proposal = -log(2.0)
+  
+  else
+
+    prob_proposal = -log(3.0)
+  
+
+  end
+
+  return prob_proposal - logfactorial(to_k)
+
+end
+
+
+function OLD_compute_proposal_change_cluster(; from_k::Int64, to_k::Int64, Kmax::Int64, nobs::Int64)::Float64
+
+  prob_proposal::Float64 = 0.0
+  prob_which::Float64 = 0.0
+  prob_order::Float64 = 0.0
+  prob_node::Float64 = 0.0
+
+  if from_k == 1
+    prob_proposal = -log(2.0)
+
     if from_k == to_k
       prob_which = 0.0
       prob_order = 0.0
@@ -36,7 +63,7 @@ function compute_proposal_change_cluster(;from_k::Int64, to_k::Int64,  Kmax::Int
     end
   else
 
-    
+
     prob_proposal = -log(3.0)
     if from_k > to_k
       prob_which = -log(from_k - 1)
@@ -54,7 +81,7 @@ function compute_proposal_change_cluster(;from_k::Int64, to_k::Int64,  Kmax::Int
       prob_which = -log(Kmax - from_k)
       prob_order = -logfactorial(from_k + 1)
       prob_node = -log(nobs - (from_k))
-      
+
     end
 
   end
@@ -65,14 +92,15 @@ end
 
 function sampling_ncluster(
   iterations::Int64,
-  obj_graph_mcmc::GraphCluter_Vers5,
-  obj_graph_prop::GraphCluter_Vers5,
+  obj_graph_mcmc::GraphCluter_Vers6,
+  obj_graph_prop::GraphCluter_Vers6,
   obj_mixture_mcmc::TestMixture_V5,
   obj_mixture_prop::TestMixture_V5,
   obj_data_mcmc::TD,
   obj_data_prop::TD,
-  obj_prior::PriorsMod1_V4
-) where {TD<:GeneralData}
+  obj_prior::PriorsMod1_V6,
+  temperature::Float64, obj_cohesion_mcmc::TC, obj_cohesion_prop::TC
+) where {TD<:GeneralData, TC<:CohesionFunction}
 
 
   #k_mcmc = obj_mixture_mcmc.K[1]
@@ -140,24 +168,7 @@ function sampling_ncluster(
       n_clust_prop = sample([n_clust - 1, n_clust, n_clust + 1], 1)[1]
     end
 
-    #if n_clust_prop == 1
-    #  prob_proposta_mcmc = -log(2.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  prob_which_mcmc = -log(Kmax - n_clust_prop)
-    #elseif n_clust_prop == Kmax
-    #  prob_proposta_mcmc = -log(2.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  prob_which_mcmc = -log(n_clust_prop - 1)
-    #else
-    #  prob_proposta_mcmc = -log(3.0)
-    #  prob_order_mcmc = -logfactorial(n_clust)
-    #  if n_clust > n_clust_prop
-    #    prob_which_mcmc = -log(Kmax - n_clust_prop)
-    #  else
-    #    prob_which_mcmc = -log(n_clust_prop - 1)
-    #  end
-    #end
-
+    
 
 
     obj_mixture_prop.K[1] = n_clust_prop
@@ -202,7 +213,8 @@ function sampling_ncluster(
           obj_mixture_prop,
           obj_data_mcmc,
           obj_data_prop,
-          obj_prior)
+          obj_prior,
+          temperature)
         #  println("A")
         #println([sort!(unique(obj_mixture_mcmc.cluster)), sort!(unique(obj_mixture_prop.cluster))])
         mapping_mat = matching_cluster_different_sizes!(best_perm, freq_table, obj_mixture_mcmc.cluster, obj_mixture_prop.cluster)
@@ -210,13 +222,14 @@ function sampling_ncluster(
         #  println([sort!(unique(obj_mixture_mcmc.cluster)), sort!(unique(obj_mixture_prop.cluster))])
         for k in 1:n_clust_prop
           update_which(obj_data_prop, obj_mixture_prop, k)
-          update_param_cluster(obj_data_prop, obj_mixture_prop, k)
+          update_param_cluster(obj_data_prop, obj_mixture_prop, k, temperature)
         end
 
         for k in 1:n_clust
-          MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
+          MH_ratio += obj_data_prop.log_likelihood[k]  - obj_data_mcmc.log_likelihood[k]  
         end
-        MH_ratio += obj_data_prop.log_likelihood[n_clust_prop]
+        MH_ratio += obj_data_prop.log_likelihood[n_clust_prop] 
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
 
         #  println([MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]), (n_clust - 1) * log(obj_mixture_mcmc.prob[1])])
         # priors
@@ -268,13 +281,14 @@ function sampling_ncluster(
 
         for k in 1:n_clust_prop
           update_which(obj_data_prop, obj_mixture_prop, k)
-          update_param_cluster(obj_data_prop, obj_mixture_prop, k)
+          update_param_cluster(obj_data_prop, obj_mixture_prop, k, temperature)
         end
 
         for k in 1:(n_clust-1)
           MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
         end
         MH_ratio += -obj_data_mcmc.log_likelihood[n_clust]
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
         #println("Meno", [MH_ratio, (n_clust_prop - 1) * log(obj_mixture_mcmc.prob[1]) - (n_clust - 1) * log(obj_mixture_mcmc.prob[1]), -compute_proposal_change_cluster(from_k=n_clust, to_k=n_clust_prop, Kmax=Kmax, nobs=obj_data_mcmc.n_points) + compute_proposal_change_cluster(from_k=n_clust_prop, to_k=n_clust, Kmax=Kmax, nobs=obj_data_mcmc.n_points)])
         
         # priors
@@ -342,12 +356,13 @@ function sampling_ncluster(
         #  println([sort!(unique(obj_mixture_mcmc.cluster)), sort!(unique(obj_mixture_prop.cluster))])
         for k in 1:n_clust
           update_which(obj_data_prop, obj_mixture_prop, k)
-          update_param_cluster(obj_data_prop, obj_mixture_prop, k)
+          update_param_cluster(obj_data_prop, obj_mixture_prop, k, temperature)
         end
         MH_ratio = 0.0
         for k in 1:n_clust
-          MH_ratio += obj_data_prop.log_likelihood[k] - obj_data_mcmc.log_likelihood[k]
+          MH_ratio += obj_data_prop.log_likelihood[k]   - obj_data_mcmc.log_likelihood[k]  
         end
+        MH_ratio += compute_cohesion(obj_cohesion_mcmc, obj_mixture_prop) - compute_cohesion(obj_cohesion_mcmc, obj_mixture_mcmc)
         #  println("Uguale", [MH_ratio])
 
         #
@@ -400,6 +415,7 @@ function sampling_ncluster(
     if (obj_mixture_mcmc.K[1]) <= size(miss_edge_mcmc, 1)
       for imiss in (obj_mixture_mcmc.K[1]):size(miss_edge_mcmc, 1)
         miss_edge_mcmc[imiss, :] .= 0
+        miss_edge_prop[imiss, :] .= 0
       end
     end
     n_clust = obj_mixture_mcmc.K[1]
@@ -417,13 +433,13 @@ end
 
 #function sampling_ncluster(
 #  iterations::Int64,
-#  obj_graph_mcmc::GraphCluter_Vers5,
-#  obj_graph_prop::GraphCluter_Vers5,
+#  obj_graph_mcmc::GraphCluter_Vers6,
+#  obj_graph_prop::GraphCluter_Vers6,
 #  obj_mixture_mcmc::TestMixture_V5,
 #  obj_mixture_prop::TestMixture_V5,
 #  obj_data_mcmc::TD,
 #  obj_data_prop::TD,
-#  obj_prior::PriorsMod1_V4
+#  obj_prior::PriorsMod1_V6
 #) where {TD <:GeneralData}
 
 

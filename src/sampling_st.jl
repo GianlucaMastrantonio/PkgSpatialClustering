@@ -1,6 +1,6 @@
 function sampling_st(
     iterations::Int64,
-    obj_graph_mcmc::GraphCluter_Vers5,
+    obj_graph_mcmc::GraphCluter_Vers6,
     obj_mixture_mcmc::TestMixture_V5,
     k_mcmc::Vector{Int64},
 )
@@ -8,7 +8,7 @@ function sampling_st(
 
 
 end
-#function sampling_st(iterations::Int64, obj_graph_mcmc::GraphCluter_Vers5, obj_mixture_mcmc::TestMixture_V5, k_mcmc::Vector{Int64})
+#function sampling_st(iterations::Int64, obj_graph_mcmc::GraphCluter_Vers6, obj_mixture_mcmc::TestMixture_V5, k_mcmc::Vector{Int64})
 
 
 #  n_points = obj_graph_mcmc.n_points
